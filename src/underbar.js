@@ -46,6 +46,7 @@
   //
   // Note: _.each does not have a return value, but rather simply runs the
   // iterator function over each item in the input collection.
+
   _.each = function(collection, iterator) {
     if (Array.isArray(collection)) {
       for (var i = 0; i < collection.length; i ++) {
@@ -90,10 +91,24 @@
   _.reject = function(collection, test) {
     // TIP: see if you can re-use _.filter() here, without simply
     // copying code in and modifying it
+    const finalValues = [];
+    _.each(collection, function(element) {
+      if (!test(element)) {
+        finalValues.push(element);
+      }
+    });
+    return finalValues;
   };
 
   // Produce a duplicate-free version of the array.
   _.uniq = function(array) {
+    const uniqueArray = [];
+    for (let i = 0; i < array.length; i++) {
+      if (!uniqueArray.includes(array[i])) {
+        uniqueArray.push(array[i]);
+      }
+    }
+    return uniqueArray;
   };
 
 
@@ -102,6 +117,14 @@
     // map() is a useful primitive iteration function that works a lot
     // like each(), but in addition to running the operation on all
     // the members, it also maintains an array of results.
+    let output = [];
+    
+    _.each(collection, function(number) {
+      debugger;
+      output.push(iterator(number));
+    });
+    
+    return output;
   };
 
   /*
@@ -134,6 +157,7 @@
   //  
   // Example:
   //   var numbers = [1,2,3];
+  //   iterator is function(total, number) {return total + number}
   //   var sum = _.reduce(numbers, function(total, number){
   //     return total + number;
   //   }, 0); // should be 6
@@ -143,6 +167,21 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
+    // step #1
+      // take care of condition where accumulator parameter is undefined
+    if (accumulator === undefined) {
+      accumulator = collection[0];
+      for (var i = 1; i < collection.length; i++) {
+        accumulator = iterator(accumulator, collection[i]);
+      }
+      return accumulator;
+    }  
+      
+    // loop through collection 
+    for (var j = 0; j < collection.length; j++) {
+      accumulator = iterator(accumulator, collection[j]); 
+    } 
+    return accumulator; 
   };
 
   // Determine if the array or object contains a given value (using `===`).
