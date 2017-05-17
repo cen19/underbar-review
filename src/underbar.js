@@ -120,7 +120,6 @@
     let output = [];
     
     _.each(collection, function(number) {
-      debugger;
       output.push(iterator(number));
     });
     
@@ -169,19 +168,59 @@
   _.reduce = function(collection, iterator, accumulator) {
     // step #1
       // take care of condition where accumulator parameter is undefined
-    if (accumulator === undefined) {
-      accumulator = collection[0];
-      for (var i = 1; i < collection.length; i++) {
-        accumulator = iterator(accumulator, collection[i]);
+    // if (accumulator === undefined) {
+    //   if (Array.isArray(collection)) {
+    //     accumulator = collection[0];
+    //     for (var i = 1; i < collection.length; i++) {
+    //       accumulator = iterator(accumulator, collection[i]);
+    //     }
+    //     return accumulator;
+    //   } else {
+    //     for (var key in collection) {
+    //       accumulator = iterator(accumulator, collection[key]);
+    //     }
+    //     return accumulator;
+    //   }
+    // } 
+      
+    // // loop through collection 
+    // if (Array.isArray(collection)) {
+    //   for (var j = 0; j < collection.length; j++) {
+    //     accumulator = iterator(accumulator, collection[j]); 
+    //   } 
+    //   return accumulator; 
+    // } else {
+    //   for (var key in collection) {
+    //     accumulator = iterator(accumulator, collection[key]);
+    //   }
+    //   return accumulator;
+    // }
+    
+    
+    if (Array.isArray(collection)) {
+      if (accumulator === undefined) {
+        accumulator = collection[0];
+        for (var i = 1; i < collection.length; i++) {
+          accumulator = iterator(accumulator, collection[i]);
+        }
+        return accumulator;
+      } else {
+        for (var j = 0; j < collection.length; j++) {
+          accumulator = iterator(accumulator, collection[j]);
+        }
+        return accumulator; 
+      }
+    } else {
+      for (var key in collection) {
+        accumulator = iterator(accumulator, collection[key]);
       }
       return accumulator;
-    }  
+    }
+    
+    for (var i = 0; i < collection.length; i++) {
       
-    // loop through collection 
-    for (var j = 0; j < collection.length; j++) {
-      accumulator = iterator(accumulator, collection[j]); 
-    } 
-    return accumulator; 
+    }
+
   };
 
   // Determine if the array or object contains a given value (using `===`).
@@ -200,12 +239,43 @@
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
     // TIP: Try re-using reduce() here.
+    if (!iterator) {
+      let check = true;
+      for (var i = 0; i < collection.length; i++) {
+        check = check && collection[i];
+      }
+      return check;
+    }
+    return _.reduce(collection, function(accumulator, curr) {
+      return accumulator && iterator(curr) ? true : false;
+    }, true);
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    if (!iterator) {
+      let check = false;
+      for (var i = 0; i < collection.length; i++) {
+        check = check || collection[i];
+      }
+      return check;
+    }
+    // some checks for at least one true
+    // every returns true if ALL true
+    // some only needs ONE true
+    // so since every has at least one false, meaning 
+    return _.every(collection, function(element) {
+      return iterator(element) ? false : true;
+    }) ? false : true;
+    
+    
+    // var finalCheck = _.every(collection, function (element) {
+    //   return iterator(element) ? false : true;
+    // });
+    
+    // return finalCheck ? false : true;
   };
 
 
@@ -228,11 +298,26 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    // can have infinite parameters passed in, each one is supposed to be an object
+    for (var i = 1; i < arguments.length; i++) {
+      for (var prop in arguments[i]) {
+        obj[prop] = arguments[i][prop];
+      }
+    }
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    for (var i = 1; i < arguments.length; i++) {
+      for (var prop in arguments[i]) {
+        if (!obj.hasOwnProperty(prop)) {
+          obj[prop] = arguments[i][prop];
+        }
+      }
+    }
+    return obj;
   };
 
 
@@ -276,6 +361,18 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var hash = {};
+    
+    return function() {
+      var arg = JSON.stringify(arguments);
+      // stringed the arguments that will be passed into the anon function
+      // for our function it will be passng the 'arguments' into the func
+      if (!hash[arg]) {
+        hash[arg] = func.apply(this, arguments);
+      }
+      return hash[arg];
+      
+    };
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -285,6 +382,12 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    var args = Array.prototype.slice.call(arguments, 2);
+    return setInterval(function() {
+
+      // debugger;
+      return func.apply(this, args);
+    }, wait);
   };
 
 
@@ -340,6 +443,30 @@
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
   _.intersection = function() {
+    var output = [];
+    
+    // I need access to the first array's elements
+      // arguments[0] === first array
+        // loop through first array to hold that value temporarily to compare
+          // to all the other array's values 
+    for (var i = 0; i < arguments[0].length; i++) {
+      // currentValue is elements of the first Array
+      var currentValue = arguments[0][i];
+      for (var j = 1; j < arguments.length; j++) {
+        // value of n-element of first array is set
+        // in this loop, I have access to the next arrays
+          // while in array, access values
+        for (var k = 0; k < arguments[j].length; k++) {
+          // accessing values
+          // compare and store if match 
+          if (arguments[j][k] === currentValue) {
+            output.push(currentValue);
+          }
+        }
+        // after 3rd loop ends, goes to the next value in first Array
+      }
+    }
+    return output;
   };
 
   // Take the difference between one array and a number of other arrays.
