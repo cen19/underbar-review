@@ -79,12 +79,16 @@
   // Return all elements of an array that pass a truth test.
   _.filter = function(collection, test) {
     const finalValues = [];
-    _.each(collection, function(element) {
+    const indexes = [];
+    _.each(collection, function(element, index, collection) {
       if (test(element)) {
         finalValues.push(element);
+        indexes.push(index);
       }
     }); 
+    console.log(indexes);
     return finalValues;
+    
   };
 
   // Return all elements of an array that don't pass a truth test.
@@ -402,6 +406,35 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    // creates the copy of the original so that we modify it without affecting original
+    var arrayCopy = Array.prototype.slice.apply(array);
+    
+    // declaring variables to help randomize
+    var tempValue = '';
+    var randomIndex = '';
+
+
+    // iteration process to begin randomize
+    for (var j = 0; j < arrayCopy.length; j++) {
+      // start loop
+        // have randomIndex be something
+          // we want the 'floor' of Math.random--> between 0and1
+            // we mutiply it by j to ensure the random number doesn't go beyond arg length
+      randomIndex = Math.floor(Math.random() * j);
+
+      // swapping begins
+      // we store the current arg[j] element into tempValue
+      tempValue = arrayCopy[j];
+      // we then change that same arg[j] to arg[randomIndex]
+      arrayCopy[j] = arrayCopy[randomIndex];
+      // then we change arg[randomIndex] to that tempValue we got from 'currentElement'
+      arrayCopy[randomIndex] = tempValue;
+      // loop again
+    }
+
+    // return args which was a copy and modified
+    return arrayCopy;
+
   };
 
 
